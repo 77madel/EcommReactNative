@@ -5,7 +5,7 @@ import images from '../../assets/desktop.png'
 import ProduitDetail from "../../ecrans/ProduitDetail";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8001/api/produits";
+const API_URL = "http://127.0.0.1:8000/api/produits";
 
 const ProduitList = ({navigation}) => {
 

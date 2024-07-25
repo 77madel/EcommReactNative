@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8001/api/produits"; // Assurez-vous que le serveur backend est accessible
+const API_URL = "http://localhost:8000/api/produits"; // Assurez-vous que le serveur backend est accessible
 
 class ProduitService {
     async getProduits() {
