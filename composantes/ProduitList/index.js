@@ -1,28 +1,30 @@
-import {View, Text, StyleSheet, Image, FlatList, TouchableOpacity, ActivityIndicator} from 'react-native'
-import React, {useEffect, useState} from 'react'
-import ProduitService from '../../fakeData/fakeProduit'
-import images from '../../assets/desktop.png'
+import { View, Text, StyleSheet, Image, ActivityIndicator, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import ProduitDetail from "../../ecrans/ProduitDetail";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/api/produits";
-
-const ProduitList = ({navigation}) => {
-
+const ProduitList = ({ navigation }) => {
     const [produits, setProduits] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        const API_URL = "http://127.0.0.1:8001/api/produits";
+
         const fetchProduits = async () => {
             try {
                 const response = await axios.get(API_URL);
-                setProduits(response.data);
-                console.log('produits', response.data)
+                console.log('Données récupérées:', response.data);
+                if (response.data.status && Array.isArray(response.data.produits)) {
+                    setProduits(response.data.produits);
+                    setLoading(false);
+                } else {
+                    setError('Format des données invalide');
+                    setLoading(false);
+                }
             } catch (error) {
                 setError('Erreur lors de la récupération des produits');
-            } finally {
                 setLoading(false);
             }
         };
@@ -58,30 +60,27 @@ const ProduitList = ({navigation}) => {
         );
     }
 
+    if (!Array.isArray(produits) || produits.length === 0) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>Les produits ne sont pas disponibles.</Text>
+            </View>
+        );
+    }
 
     return (
-    <View>
-      <View style={styles.productList}>
-        <FlatList
-          data={produits}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.productItem} onPress={() => handleProductPress(item)}>
-              <Image source={images} style={styles.productImage} />
-              <Text style={styles.productBrand}>{item.stock}</Text>
-              {/* <Text style={styles.productName}>{item.description}</Text> */}
-              <Text style={styles.productPrice}>{item.prix}</Text>
-            </TouchableOpacity>
-          )}
-          numColumns={2}
-          key={2}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContainer}
-        />
-      </View>
-    </View>
-  )
-}
+        <View style={styles.productList}>
+            {produits.map(item => (
+                <Pressable key={item.id} style={styles.productItem} onPress={() => handleProductPress(item)}>
+                    <Image source={{ uri: item.image_url || 'https://via.placeholder.com/100' }} style={styles.productImage} />
+                    <Text style={styles.productBrand}>{item.nom}</Text>
+                    <Text style={styles.productBrand}>{item.stock}</Text>
+                    <Text style={styles.productPrice}>{item.prixFormatted}</Text>
+                </Pressable>
+            ))}
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
     productList: {
@@ -110,13 +109,13 @@ const styles = StyleSheet.create({
         color: '#000',
         marginTop: 5,
     },
-      productName: {
+    productName: {
         fontSize: 14,
         color: '#000',
         textAlign: 'center',
         marginTop: 5,
     },
-      productPrice: {
+    productPrice: {
         fontSize: 14,
         color: '#ff0000',
         marginTop: 5,
@@ -136,6 +135,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginTop: 50,
     },
-})
+});
 
-export default ProduitList
+export default ProduitList;
